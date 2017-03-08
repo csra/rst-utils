@@ -17,7 +17,8 @@
 package de.citec.csra.rst.parse;
 
 import rst.hri.HighlightTargetType.HighlightTarget;
-import rst.timing.DurationType;
+import rst.hri.HighlightTargetType.HighlightTarget.Modality;
+import rst.timing.DurationType.Duration;
 
 /**
  *
@@ -40,13 +41,24 @@ public class HighlightTargetParser implements StringParser<HighlightTarget> {
 		for (int i = 1; i < tgt.length - 1; i++) {
 			bld.addModality(mods.getValue(tgt[i]));
 		}
-		bld.setDuration(DurationType.Duration.newBuilder().setTime(Long.valueOf(tgt[tgt.length - 1])).build());
+		bld.setDuration(Duration.newBuilder().setTime(Long.valueOf(tgt[tgt.length - 1])).build());
 		return bld.build();
 	}
 
 	@Override
 	public Class<HighlightTarget> getTargetClass() {
 		return HighlightTarget.class;
+	}
+
+	@Override
+	public String getString(HighlightTarget obj) {
+		StringBuilder bld = new StringBuilder();
+		bld.append(obj.getTargetId()).append(",");
+		for (Modality m : obj.getModalityList()) {
+			bld.append(m.name());
+		}
+		bld.append(",").append(obj.getDuration().getTime());
+		return bld.toString();
 	}
 
 }

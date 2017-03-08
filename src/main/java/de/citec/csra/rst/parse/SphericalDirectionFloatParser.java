@@ -23,19 +23,19 @@ import rst.geometry.SphericalDirectionFloatType.SphericalDirectionFloat;
  * @author Patrick Holthaus
  * (<a href=mailto:patrick.holthaus@uni-bielefeld.de>patrick.holthaus@uni-bielefeld.de</a>)
  */
-public class SphericalDirectionFloatParser implements StringParser<SphericalDirectionFloat>{
+public class SphericalDirectionFloatParser implements StringParser<SphericalDirectionFloat> {
 
 	@Override
 	public SphericalDirectionFloat getValue(String val) throws IllegalArgumentException {
-		String[] pt= val.split(",");
-		if(pt.length != 2){
+		String[] pt = val.split(",");
+		if (pt.length != 2) {
 			throw new IllegalArgumentException("Illegal angle: " + val);
 		}
-		
+
 		SphericalDirectionFloat angle = SphericalDirectionFloat.newBuilder().
 				setAzimuth(Float.valueOf(pt[0])).
 				setElevation(Float.valueOf(pt[1])).build();
-		
+
 		return angle;
 	}
 
@@ -43,5 +43,13 @@ public class SphericalDirectionFloatParser implements StringParser<SphericalDire
 	public Class<SphericalDirectionFloat> getTargetClass() {
 		return SphericalDirectionFloat.class;
 	}
-	
+
+	@Override
+	public String getString(SphericalDirectionFloat obj) {
+		StringBuilder bld = new StringBuilder();
+		bld.append(obj.getAzimuth()).
+				append(",").
+				append(obj.getElevation());
+		return bld.toString();
+	}
 }

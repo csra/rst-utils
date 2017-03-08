@@ -43,4 +43,9 @@ public class EnumParser<T extends Enum<T>> implements StringParser<T> {
 	public Class<T> getTargetClass() {
 		return this.cls;
 	}
+
+	@Override
+	public String getString(T obj) {
+		return obj.name();
+	}
 }

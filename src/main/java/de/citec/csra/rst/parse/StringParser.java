@@ -25,5 +25,5 @@ public interface StringParser<T> {
 	
 	public Class<T> getTargetClass();
 	public T getValue(String tgt) throws IllegalArgumentException;
-	
+	public String getString(T obj);
 }

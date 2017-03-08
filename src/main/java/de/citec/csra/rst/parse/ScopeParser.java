@@ -39,4 +39,9 @@ public class ScopeParser implements StringParser<Scope> {
 	public Class<Scope> getTargetClass() {
 		return Scope.class;
 	}
+
+	@Override
+	public String getString(Scope obj) {
+		return obj.toString();
+	}
 }
