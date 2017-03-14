@@ -19,6 +19,8 @@ package de.citec.csra.rst.util;
 import com.google.protobuf.ByteString;
 import rst.generic.KeyValuePairType.KeyValuePair;
 import rst.generic.ValueType;
+import rst.generic.ValueType.Value;
+import static rst.generic.ValueType.Value.Type.*;
 
 /**
  *
@@ -43,30 +45,56 @@ public class GenericsUtils {
         ValueType.Value.Builder valueBuilder = KVpairBuilder.getValueBuilder();
 
         if (value == null) {
-            valueBuilder.setType(ValueType.Value.Type.VOID);
+            valueBuilder.setType(VOID);
 
         } else if (value instanceof String) {
-            valueBuilder.setType(ValueType.Value.Type.STRING).setString((String) value);
+            valueBuilder.setType(STRING).setString((String) value);
 
         } else if (value instanceof Double || value instanceof Float) {
-            valueBuilder.setType(ValueType.Value.Type.DOUBLE).setDouble((double) value);
+            valueBuilder.setType(DOUBLE).setDouble((double) value);
 
         } else if (value instanceof Integer) {
-            valueBuilder.setType(ValueType.Value.Type.INT).setInt((int) value);
+            valueBuilder.setType(INT).setInt((int) value);
 
         } else if (value instanceof Long) {
-            valueBuilder.setType(ValueType.Value.Type.INT).setInt((int) ((long) value));
+            valueBuilder.setType(INT).setInt((int) ((long) value));
 
         } else if (value instanceof Boolean) {
-            valueBuilder.setType(ValueType.Value.Type.BOOL).setBool((boolean) value);
+            valueBuilder.setType(BOOL).setBool((boolean) value);
 
         } else if (value instanceof ByteString) {
-            valueBuilder.setType(ValueType.Value.Type.BINARY).setBinary((ByteString) value);
+            valueBuilder.setType(BINARY).setBinary((ByteString) value);
 
         } else {
             throw new UnknownTypeException("Unknown type: " + value + " - " + value.getClass());
         }
         return KVpairBuilder.build();
     }
-
+	
+	
+	public static Object valueToObject(Value v) {
+		switch (v.getType()) {
+			case BOOL:
+				return v.getBool();
+			case DOUBLE:
+				return v.getDouble();
+			case INT:
+				return v.getInt();
+			case STRING:
+				return v.getString();
+			case ARRAY:
+				int size = v.getArrayCount();
+				Object[] oa = new Object[size];
+				for (int i = 0; i < size; i++) {
+					Value vi = v.getArray(i);
+					oa[i] = valueToObject(vi);
+				}
+				return oa;
+			case BINARY:
+				return v.getBinary();
+			case VOID:
+			default:
+				return null;
+		}
+	}
 }
