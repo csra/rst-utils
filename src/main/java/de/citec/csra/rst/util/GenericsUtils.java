@@ -17,7 +17,7 @@
 package de.citec.csra.rst.util;
 
 import com.google.protobuf.ByteString;
-import rst.generic.KeyValuePairType;
+import rst.generic.KeyValuePairType.KeyValuePair;
 import rst.generic.ValueType;
 
 /**
@@ -26,7 +26,7 @@ import rst.generic.ValueType;
  */
 public class GenericsUtils {
 
-    private static final KeyValuePairType.KeyValuePair.Builder KVpairBuilder = KeyValuePairType.KeyValuePair.newBuilder();
+    private static final KeyValuePair.Builder KVpairBuilder = KeyValuePair.newBuilder();
 
     /**
      * Creates a KeyValuePair for any given String and object. Object is casted to the 
@@ -37,7 +37,7 @@ public class GenericsUtils {
      * @param value the target value for the KVP
      * @return 
      */
-    private static KeyValuePairType.KeyValuePair getKeyValuePair(String key, Object value) throws UnknownTypeException {
+    public static KeyValuePair getKeyValuePair(String key, Object value) throws UnknownTypeException {
         KVpairBuilder.clear();
         KVpairBuilder.setKey(key);
         ValueType.Value.Builder valueBuilder = KVpairBuilder.getValueBuilder();
