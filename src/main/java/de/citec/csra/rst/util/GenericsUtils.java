@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package de.citec.csra.rst.parse;
+package de.citec.csra.rst.util;
 
 import com.google.protobuf.ByteString;
 import rst.generic.KeyValuePairType;
