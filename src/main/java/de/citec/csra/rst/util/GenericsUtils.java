@@ -39,7 +39,7 @@ public class GenericsUtils {
      * @param value the target value for the KVP
      * @return 
      */
-    public static KeyValuePair getKeyValuePair(String key, Object value) throws UnknownTypeException {
+    public static KeyValuePair getKeyValuePair(String key, Object value) throws IllegalArgumentException {
         KVpairBuilder.clear();
         KVpairBuilder.setKey(key);
         ValueType.Value.Builder valueBuilder = KVpairBuilder.getValueBuilder();
@@ -66,7 +66,7 @@ public class GenericsUtils {
             valueBuilder.setType(BINARY).setBinary((ByteString) value);
 
         } else {
-            throw new UnknownTypeException("Unknown type: " + value + " - " + value.getClass());
+            throw new IllegalArgumentException("Unknown type: " + value + " - " + value.getClass());
         }
         return KVpairBuilder.build();
     }
