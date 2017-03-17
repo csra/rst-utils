@@ -35,11 +35,14 @@ public class TypesUtils {
 			try {
 				String rstName = definition.substring(definition.indexOf(".") + 1, definition.indexOf(":"));
 				String typeInfo = definition.substring(definition.indexOf("{") + 1, definition.lastIndexOf("}"));
-
+				LOG.log(Level.FINER, "Assuming RST of type ''{0}'' specified as ''{1}''.", new Object[]{rstName, typeInfo});
+				
 				String pkg = rstName.substring(0, rstName.lastIndexOf(".") + 1);
 				String clz = rstName.substring(rstName.lastIndexOf(".") + 1);
 				String fqClz = pkg + clz + "Type$" + clz;
-
+				
+				LOG.log(Level.FINER, "Trying to instantiate builder for class ''{0}''.", fqClz);
+				
 				Class<?> cls = Class.forName(fqClz);
 				Message.Builder msgBuilder = (Message.Builder) cls.getMethod("newBuilder").invoke(null);
 				TextFormat.merge(typeInfo, msgBuilder);
