@@ -27,24 +27,28 @@ import java.util.logging.Logger;
  * @author Patrick Holthaus
  */
 public class TypesUtils {
-	
+
 	private final static Logger LOG = Logger.getLogger(TypesUtils.class.getName());
 
 	public static Object parseText(String definition) throws IllegalArgumentException {
-		try {
-			String rstName = definition.substring(definition.indexOf(".") + 1, definition.indexOf(":"));
-			String typeInfo = definition.substring(definition.indexOf("{") + 1, definition.lastIndexOf("}"));
+		if (definition.startsWith(".")) {
+			try {
+				String rstName = definition.substring(definition.indexOf(".") + 1, definition.indexOf(":"));
+				String typeInfo = definition.substring(definition.indexOf("{") + 1, definition.lastIndexOf("}"));
 
-			String pkg = rstName.substring(0, rstName.lastIndexOf(".") + 1);
-			String clz = rstName.substring(rstName.lastIndexOf(".") + 1);
-			String fqClz = pkg + clz + "Type$" + clz;
+				String pkg = rstName.substring(0, rstName.lastIndexOf(".") + 1);
+				String clz = rstName.substring(rstName.lastIndexOf(".") + 1);
+				String fqClz = pkg + clz + "Type$" + clz;
 
-			Class<?> cls = Class.forName(fqClz);
-			Message.Builder msgBuilder = (Message.Builder) cls.getMethod("newBuilder").invoke(null);
-			TextFormat.merge(typeInfo, msgBuilder);
-			return msgBuilder.build();
-		} catch (StringIndexOutOfBoundsException | ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException | TextFormat.ParseException e) {
-			LOG.log(Level.FINER, "Unable to parse string ''{0}'' as an rst data type ({1}), returning original definiton.", new Object[]{definition, e.getMessage()});
+				Class<?> cls = Class.forName(fqClz);
+				Message.Builder msgBuilder = (Message.Builder) cls.getMethod("newBuilder").invoke(null);
+				TextFormat.merge(typeInfo, msgBuilder);
+				return msgBuilder.build();
+			} catch (StringIndexOutOfBoundsException | ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException | TextFormat.ParseException e) {
+				LOG.log(Level.FINER, "Unable to parse string ''{0}'' as an rst data type ({1}), returning original definiton.", new Object[]{definition, e.getMessage()});
+				return definition;
+			}
+		} else {
 			return definition;
 		}
 	}
