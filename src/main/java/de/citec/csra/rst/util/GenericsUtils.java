@@ -18,83 +18,101 @@ package de.citec.csra.rst.util;
 
 import com.google.protobuf.ByteString;
 import rst.generic.KeyValuePairType.KeyValuePair;
-import rst.generic.ValueType;
 import rst.generic.ValueType.Value;
 import static rst.generic.ValueType.Value.Type.*;
 
 /**
- *
+ * Utility class for an easy manipulation of {@link rst.generic.KeyValuePairType.KeyValuePair KeyValuePair} objects.
  * @author nkoester
  */
 public class GenericsUtils {
 
-    private static final KeyValuePair.Builder KVpairBuilder = KeyValuePair.newBuilder();
-
+    private static final KeyValuePair.Builder PAIRBLD = KeyValuePair.newBuilder();
+	private static final Value.Builder VALBLD = PAIRBLD.getValueBuilder();
+	
     /**
-     * Creates a KeyValuePair for any given String and object. Object is casted to the 
-     * according type available in RST if possible. UnknownTypeException is raised 
-     * otherwise. Only support base types.
+     * Creates a {@link rst.generic.KeyValuePairType.KeyValuePair} for any given String and object. The given object is casted to the 
+     * according {@link rst.generic.ValueType.Value} available in RST if possible.
      * 
-     * @param key The key for the KVP
-     * @param value the target value for the KVP
-     * @return 
+	 * @see de.citec.csra.rst.util.GenericsUtils#objectToValue
+     * @param key the key for the KVP.
+     * @param value the target value for the KVP.
+     * @return a KeyValuePair containing the provided key and an object as a {@link rst.generic.ValueType.Value}.
+	 * @throws IllegalArgumentException if the object cannot be casted into an appropriate {@link rst.generic.ValueType.Value}.
      */
     public static KeyValuePair getKeyValuePair(String key, Object value) throws IllegalArgumentException {
-        KVpairBuilder.clear();
-        KVpairBuilder.setKey(key);
-        ValueType.Value.Builder valueBuilder = KVpairBuilder.getValueBuilder();
-
-        if (value == null) {
-            valueBuilder.setType(VOID);
-
-        } else if (value instanceof String) {
-            valueBuilder.setType(STRING).setString((String) value);
-
-        } else if (value instanceof Double || value instanceof Float) {
-            valueBuilder.setType(DOUBLE).setDouble((double) value);
-
-        } else if (value instanceof Integer) {
-            valueBuilder.setType(INT).setInt((int) value);
-
-        } else if (value instanceof Long) {
-            valueBuilder.setType(INT).setInt((int) ((long) value));
-
-        } else if (value instanceof Boolean) {
-            valueBuilder.setType(BOOL).setBool((boolean) value);
-
-        } else if (value instanceof ByteString) {
-            valueBuilder.setType(BINARY).setBinary((ByteString) value);
-
-        } else {
-            throw new IllegalArgumentException("Unknown type: " + value + " - " + value.getClass());
-        }
-        return KVpairBuilder.build();
+        PAIRBLD.clear();
+        PAIRBLD.setKey(key);
+        PAIRBLD.setValue(objectToValue(value));
+        return PAIRBLD.build();
     }
 	
-	
-	public static Object valueToObject(Value v) {
-		switch (v.getType()) {
+	/**
+	 * Retrieves a plain java object from a given {@link rst.generic.ValueType.Value}.
+	 * Reads the value's description in order to return the appropriate content.
+	 * Recursively converts the value's content to an object array if the value's
+	 * type is {@link rst.generic.ValueType.Value.Type#ARRAY}. May be null if the
+	 * value's type is {@link rst.generic.ValueType.Value.Type#VOID}. Furthermore,
+	 * {@link rst.generic.ValueType.Value.Type#BINARY} types are represented as a
+	 * {@link com.google.protobuf.ByteString}.
+	 * @param value the value to convert.
+	 * @return a java object representing the value's content.
+	 */
+	public static Object valueToObject(Value value) {
+		switch (value.getType()) {
 			case BOOL:
-				return v.getBool();
+				return value.getBool();
 			case DOUBLE:
-				return v.getDouble();
+				return value.getDouble();
 			case INT:
-				return v.getInt();
+				return value.getInt();
 			case STRING:
-				return v.getString();
+				return value.getString();
 			case ARRAY:
-				int size = v.getArrayCount();
+				int size = value.getArrayCount();
 				Object[] oa = new Object[size];
 				for (int i = 0; i < size; i++) {
-					Value vi = v.getArray(i);
+					Value vi = value.getArray(i);
 					oa[i] = valueToObject(vi);
 				}
 				return oa;
 			case BINARY:
-				return v.getBinary();
+				return value.getBinary();
 			case VOID:
 			default:
 				return null;
 		}
+	}
+	
+	/**
+	 * Converts a java object o an appropriate {@link rst.generic.ValueType.Value}.
+	 * If the given object is an instance of a supported type, the object is casted
+	 * and converted as an according {@link rst.generic.ValueType.Value} type.
+	 * An {@link IllegalArgumentException} is raised otherwise. Only supports basic types that are
+	 * specified as an enumeration item in {@link rst.generic.ValueType.Value Value}.
+	 * @param object the object to convert.
+	 * @return a value with the appropriate type.
+	 * @throws IllegalArgumentException if the object cannot be casted into an appropriate {@link rst.generic.ValueType.Value}.
+	 */
+	public static Value objectToValue(Object object) {
+		VALBLD.clear();
+		if (object == null) {
+            VALBLD.setType(VOID);
+        } else if (object instanceof String) {
+            VALBLD.setType(STRING).setString((String) object);
+        } else if (object instanceof Double || object instanceof Float) {
+            VALBLD.setType(DOUBLE).setDouble((double) object);
+        } else if (object instanceof Integer) {
+            VALBLD.setType(INT).setInt((int) object);
+        } else if (object instanceof Long) {
+            VALBLD.setType(INT).setInt((int) ((long) object));
+        } else if (object instanceof Boolean) {
+            VALBLD.setType(BOOL).setBool((boolean) object);
+        } else if (object instanceof ByteString) {
+            VALBLD.setType(BINARY).setBinary((ByteString) object);
+        } else {
+            throw new IllegalArgumentException("Unknown type: " + object + " - " + object.getClass());
+        }
+		return VALBLD.build();
 	}
 }
