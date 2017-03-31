@@ -20,6 +20,7 @@ package de.citec.csra.rst.util;
  *
  * @author nkoester
  */
+@Deprecated
 public class UnknownTypeException extends Exception {
 
     public UnknownTypeException() {
