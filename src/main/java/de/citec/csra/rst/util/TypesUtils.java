@@ -43,20 +43,20 @@ public class TypesUtils {
 			try {
 				String rstName = definition.substring(definition.indexOf(".") + 1, definition.indexOf(":"));
 				String typeInfo = definition.substring(definition.indexOf("{") + 1, definition.lastIndexOf("}"));
-				LOG.log(Level.INFO, "Assuming RST of type ''{0}'' specified as ''{1}''.", new Object[]{rstName, typeInfo});
+				LOG.log(Level.FINER, "Assuming RST of type ''{0}'' specified as ''{1}''.", new Object[]{rstName, typeInfo});
 
 				String pkg = rstName.substring(0, rstName.lastIndexOf(".") + 1);
 				String clz = rstName.substring(rstName.lastIndexOf(".") + 1);
 				String fqClz = pkg + clz + "Type$" + clz;
 
-				LOG.log(Level.INFO, "Trying to instantiate builder for class ''{0}''.", fqClz);
+				LOG.log(Level.FINER, "Trying to instantiate builder for class ''{0}''.", fqClz);
 
 				Class<?> cls = Class.forName(fqClz);
 				Message.Builder msgBuilder = (Message.Builder) cls.getMethod("newBuilder").invoke(null);
 				TextFormat.merge(typeInfo, msgBuilder);
 				return msgBuilder.build();
 			} catch (StringIndexOutOfBoundsException | ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException | TextFormat.ParseException e) {
-				LOG.log(Level.INFO, "Unable to parse string ''{0}'' as an rst data type ({1}), returning original definiton.", new Object[]{definition, e});
+				LOG.log(Level.FINER, "Unable to parse string ''{0}'' as an rst data type ({1}), returning original definiton.", new Object[]{definition, e});
 				return definition;
 			}
 		} else {
@@ -66,14 +66,14 @@ public class TypesUtils {
 
 	public static Object parse(String dsc) {
 		if (dsc == null) {
-			LOG.log(Level.INFO, "Description is null, returning.");
+			LOG.log(Level.FINER, "Description is null, returning.");
 			return dsc;
 		}
 
 		try {
 			return NumberFormat.getInstance().parse(dsc);
 		} catch (ParseException ex) {
-			LOG.log(Level.INFO, "Could not infer number from description string ''{0}''.", dsc);
+			LOG.log(Level.FINER, "Could not infer number from description string ''{0}''.", dsc);
 		}
 
 		switch (dsc.toLowerCase()) {
@@ -82,7 +82,7 @@ public class TypesUtils {
 			case "true":
 				return true;
 			default:
-				LOG.log(Level.INFO, "Could not infer boolean from description string ''{0}''.", dsc);
+				LOG.log(Level.FINER, "Could not infer boolean from description string ''{0}''.", dsc);
 		}
 
         Matcher matcher = RST.matcher(dsc);
@@ -90,13 +90,13 @@ public class TypesUtils {
 			try {
 				String rstName =  matcher.group(1);
 				String typeInfo = matcher.group(2);
-				LOG.log(Level.INFO, "Assuming RST of type ''{0}'' specified as ''{1}''.", new Object[]{rstName, typeInfo});
+				LOG.log(Level.FINER, "Assuming RST of type ''{0}'' specified as ''{1}''.", new Object[]{rstName, typeInfo});
 
 				String pkg = rstName.substring(0, rstName.lastIndexOf(".") + 1);
 				String clz = rstName.substring(rstName.lastIndexOf(".") + 1);
 				String fqClz = pkg + clz + "Type$" + clz;
 
-				LOG.log(Level.INFO, "Trying to instantiate builder for class ''{0}''.", fqClz);
+				LOG.log(Level.FINER, "Trying to instantiate builder for class ''{0}''.", fqClz);
 
 				Class<?> cls = Class.forName(fqClz);
 				Message.Builder msgBuilder = (Message.Builder) cls.getMethod("newBuilder").invoke(null);
@@ -104,14 +104,14 @@ public class TypesUtils {
 				
 				Message msg = msgBuilder.build();
 				DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(msg));
-				LOG.log(Level.INFO, "Loaded default converter for message ''{0}''.", StringRepresentation.shortString(msg));
+				LOG.log(Level.FINER, "Loaded default converter for message ''{0}''.", StringRepresentation.shortString(msg));
 				return msg;
 			} catch (StringIndexOutOfBoundsException | ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException | TextFormat.ParseException e) {
-				LOG.log(Level.INFO, "Unable to parse string ''{0}'' as an rst data type ({1}), returning original definiton.", new Object[]{dsc, e});
+				LOG.log(Level.FINER, "Unable to parse string ''{0}'' as an rst data type ({1}), returning original definiton.", new Object[]{dsc, e});
 				return dsc;
 			}
 		} else {
-			LOG.log(Level.INFO, "Could not infer rst from description string ''{0}''.", dsc);
+			LOG.log(Level.FINER, "Could not infer rst from description string ''{0}''.", dsc);
 			return dsc;
 		}
 	}
