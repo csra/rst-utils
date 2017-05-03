@@ -11,6 +11,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<netbeans.hint.license>gpl30</netbeans.hint.license>
 		<rsx.version>[0.15,0.16-SNAPSHOT)</rsx.version>
+		<time4j.version>[4.27.2,4.28)</time4j.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -43,17 +44,17 @@
 		<dependency>
 			<groupId>net.time4j</groupId>
 			<artifactId>time4j-core</artifactId>
-			<version>4.15</version>
+			<version>${time4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.time4j</groupId>
 			<artifactId>time4j-misc</artifactId>
-			<version>4.15</version>
+			<version>${time4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.time4j</groupId>
 			<artifactId>time4j-range</artifactId>
-			<version>4.15</version>
+			<version>${time4j.version}</version>
 		</dependency>
 	</dependencies>
 	
