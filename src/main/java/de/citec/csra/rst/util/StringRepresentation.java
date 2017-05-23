@@ -25,7 +25,13 @@ import rst.timing.IntervalType.Interval;
  * @author pholthau
  */
 public class StringRepresentation {
+	
+	private static long origin = -1;
 
+	public static void setIntervalOrigin(long origin){
+		StringRepresentation.origin = origin;
+	}
+	
 	/**
 	 * Generates a short string representation of a single
 	 * {@link rst.communicationpatterns.ResourceAllocationType.ResourceAllocation}.
@@ -70,11 +76,10 @@ public class StringRepresentation {
 		if (i == null) {
 			return "null";
 		}
-		long now = System.currentTimeMillis();
 		StringBuilder b = new StringBuilder("(");
-		b.append(i.getBegin().getTime() - now)
+		b.append(i.getBegin().getTime() - (origin < 0 ? System.currentTimeMillis() : origin))
 				.append(")-(")
-				.append(i.getEnd().getTime() - now)
+				.append(i.getEnd().getTime() - (origin < 0 ? System.currentTimeMillis() : origin))
 				.append(")");
 		return b.toString();
 	}
