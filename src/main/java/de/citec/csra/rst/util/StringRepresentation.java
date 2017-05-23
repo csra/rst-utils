@@ -21,7 +21,8 @@ import rst.timing.IntervalType.Interval;
 
 /**
  * Utility class that provides readable (short) string representations of 
- * {@link rst.communicationpatterns.ResourceAllocationType.ResourceAllocation} types.
+ * {@link rst.communicationpatterns.ResourceAllocationType.ResourceAllocation} 
+ * {@link rst.timing.IntervalType.Interval} and other types.
  * @author pholthau
  */
 public class StringRepresentation {
