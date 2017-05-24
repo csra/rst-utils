@@ -3,15 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.citec.csra</groupId>
 	<artifactId>rst-utils</artifactId>
-	<version>0.2.0</version>
+	<version>0.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<netbeans.hint.license>gpl30</netbeans.hint.license>
-		<rsx.version>[0.15.0,0.16-SNAPSHOT)</rsx.version>
-		<time4j.version>[4.27.2,4.28-SNAPSHOT)</time4j.version>
+		<rsx.version>[0.15.0,)</rsx.version>
+		<time4j.version>[4.27.2,)</time4j.version>
 	</properties>
 	<repositories>
 		<repository>
