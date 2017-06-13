@@ -35,7 +35,7 @@ import rsb.converter.ProtocolBufferConverter;
 public class TypesUtils {
 
 	private final static Logger LOG = Logger.getLogger(TypesUtils.class.getName());
-	private final static Pattern RST = Pattern.compile("^\\.(.*):\\{(.*)\\}$");
+	private final static Pattern RST = Pattern.compile("^\\.(.*?):\\{(.*)\\}$");
 	
 	@Deprecated
 	public static Object parseText(String definition) throws IllegalArgumentException {
