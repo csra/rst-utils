@@ -56,7 +56,7 @@ public class StringRepresentation {
 		if (a.getResourceIdsCount() > 0) {
 			b.append(";");
 			for (String s : a.getResourceIdsList()) {
-				b.append(s).append(",");
+				b.append(shortString(s)).append(",");
 			}
 			b.deleteCharAt(b.length() - 1);
 		}
@@ -89,11 +89,11 @@ public class StringRepresentation {
 	 * Generates a compact string representation of any object.
 	 * The generated string representation does not contain newlines, so it can be
 	 * used for logging purposes. In particular, the following expression is used
-	 * to generate the representation: {@code (o == null) ? "null" : o.toString().replaceAll("\n", " ");}
+	 * to generate the representation: {@code (o == null) ? "null" : o.toString().replaceAll("\\s+", " ").trim();}
 	 * @param o The object that should be represented.
 	 * @return a short string representation of the given object.
 	 */
 	public static String shortString(Object o) {
-		return (o == null) ? "null" : o.toString().replaceAll("\n", " ");
+		return (o == null) ? "null" : o.toString().replaceAll("\\s+", " ").trim();
 	}
 }
