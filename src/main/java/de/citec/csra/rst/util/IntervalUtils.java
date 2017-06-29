@@ -16,14 +16,18 @@
  */
 package de.citec.csra.rst.util;
 
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import java.util.stream.Collectors;
 import net.time4j.Moment;
+import net.time4j.SystemClock;
 import net.time4j.range.ChronoInterval;
 import net.time4j.range.IntervalCollection;
 import net.time4j.range.MomentInterval;
+import net.time4j.scale.TimeScale;
 import rst.timing.IntervalType.Interval;
 import rst.timing.TimestampType.Timestamp;
 
@@ -46,25 +50,49 @@ public class IntervalUtils {
 		}
 	}
 
+	@Deprecated
 	public static Interval buildRelativeRst(long delay, long duration) {
-		long now = System.currentTimeMillis();
-		long start = now + delay;
-		long end = start + duration;
-		return buildRst(start, end);
+		return buildRelativeRst(delay, duration, MILLISECONDS);
 	}
 
-	public static Interval buildRst(long begin, long end) {
+	@Deprecated
+	public static Interval buildRst(long delay, long duration) {
+		return buildRst(delay, duration, MILLISECONDS);
+	}
+
+	public static Interval buildRelativeRst(long delay, long duration, TimeUnit unit) {
+		long now = currentTimeInMicros();
+		delay = MICROSECONDS.convert(delay, unit);
+		duration = MICROSECONDS.convert(duration, unit);
 		return Interval.newBuilder().
-				setBegin(Timestamp.newBuilder().setTime(begin)).
-				setEnd(Timestamp.newBuilder().setTime(end)).build();
+				setBegin(Timestamp.newBuilder().setTime(now + delay)).
+				setEnd(Timestamp.newBuilder().setTime(now + delay + duration)).build();
 	}
 
+	public static Interval buildRst(long begin, long end, TimeUnit unit) {
+		return Interval.newBuilder().
+				setBegin(Timestamp.newBuilder().setTime(MICROSECONDS.convert(begin, unit))).
+				setEnd(Timestamp.newBuilder().setTime(MICROSECONDS.convert(end, unit))).build();
+	}
+
+	private final static SystemClock CLOCK = SystemClock.MONOTONIC;
 	private final static Comparator<ChronoInterval<Moment>> BY_LENGTH = new LengthComparator();
 	private final static Comparator<ChronoInterval<Moment>> BY_BEGIN = MomentInterval.comparator();
 
 	public static MomentInterval fromRst(Interval i) {
 		if (i != null) {
-			return MomentInterval.between(Instant.ofEpochMilli(i.getBegin().getTime()), Instant.ofEpochMilli(i.getEnd().getTime()));
+			long startMicros = i.getBegin().getTime();
+			long stopMicros = i.getEnd().getTime();
+
+			long startSeconds = startMicros / 1000000;
+			long stopSeconds = stopMicros / 1000000;
+
+			int startNanos = (int) ((startMicros % 1000000) * 1000);
+			int stopNanos = (int) ((stopMicros % 1000000) * 1000);
+
+			Moment startMoment = Moment.of(startSeconds, startNanos, TimeScale.POSIX);
+			Moment stopMoment = Moment.of(stopSeconds, stopNanos, TimeScale.POSIX);
+			return MomentInterval.between(startMoment, stopMoment);
 		} else {
 			return null;
 		}
@@ -76,9 +104,18 @@ public class IntervalUtils {
 
 	public static Interval fromT4j(MomentInterval i) {
 		if (i != null) {
+			Moment startMoment = i.getStartAsMoment();
+			Moment stopMoment = i.getEndAsMoment();
+			long start
+					= startMoment.getElapsedTime(TimeScale.POSIX) * 1000000
+					+ startMoment.getNanosecond() / 1000;
+			long stop
+					= stopMoment.getElapsedTime(TimeScale.POSIX) * 1000000
+					+ stopMoment.getNanosecond() / 1000;
+
 			return Interval.newBuilder().
-					setBegin(Timestamp.newBuilder().setTime(i.getStartAsInstant().toEpochMilli())).
-					setEnd(Timestamp.newBuilder().setTime(i.getEndAsInstant().toEpochMilli())).
+					setBegin(Timestamp.newBuilder().setTime(start)).
+					setEnd(Timestamp.newBuilder().setTime(stop)).
 					build();
 		} else {
 			return null;
@@ -143,7 +180,7 @@ public class IntervalUtils {
 
 	public static MomentInterval findRemaining(MomentInterval g, List<MomentInterval> b) {
 
-		Moment now = Moment.from(Instant.now());
+		Moment now = CLOCK.currentTime();
 		IntervalCollection<Moment> blocking = IntervalCollection.onMomentAxis().plus(b);
 
 		for (ChronoInterval<Moment> m : blocking.getIntervals()) {
@@ -178,8 +215,12 @@ public class IntervalUtils {
 		return null;
 	}
 
+	public static long currentTimeInMicros() {
+		return CLOCK.currentTimeInMicros();
+	}
+
 	public static MomentInterval includeNow(MomentInterval g) {
-		Moment now = Moment.from(Instant.now());
+		Moment now = CLOCK.currentTime();
 		if (g.contains(now)) {
 			return g;
 		} else {
@@ -190,60 +231,4 @@ public class IntervalUtils {
 			}
 		}
 	}
-
-//	@Deprecated
-//	public static ResourceAllocation shift(ResourceAllocation prototype, long start, long end) {
-//		IntervalType.Interval.Builder interval = IntervalType.Interval.newBuilder().
-//				setBegin(TimestampType.Timestamp.newBuilder().setTime(start)).
-//				setEnd(TimestampType.Timestamp.newBuilder().setTime(end));
-//
-//		return ResourceAllocationType.ResourceAllocation.newBuilder(prototype).
-//				setSlot(interval).build();
-//	}
-//
-//	@Deprecated
-//	public static ResourceAllocation shorten(ResourceAllocation prototype, long cStart, long cEnd) {
-//		long myStart = prototype.getSlot().getBegin().getTime();
-//		long myEnd = prototype.getSlot().getEnd().getTime();
-//
-//		if (cEnd <= myEnd) {
-//			// conflict ends before our interval
-//			if (cEnd >= myStart) {
-//				if (cStart >= myStart) {
-//					// |-------|
-//					//    |--|
-//					// |-|
-//					// conflict starts and ends inside our interval
-//					myEnd = cStart - 1;
-//				} else {
-//					//   |-------|
-//					// |---|
-//					//      |----|
-//					// conflict starts befour our interval and ends inside our interval
-//					myStart = cEnd + 1;
-//				}
-//			} else {
-//				//       |-----|
-//				// |---|
-//				//       |-----|
-//				// conflict is completely before our interval
-//			}
-//		} else {
-//			// conflict ends after our interval
-//			if (cStart < myStart) {
-//				//   |-----|
-//				// |----------|
-//				//       
-//				// our interval is completely contained
-//				return null;
-//			} else {
-//				//       |-----|
-//				//           |---|
-//				//       |--|
-//				// conflict starts inside our interval
-//				myEnd = cEnd - 1;
-//			}
-//		}
-//		return shift(prototype, myStart, myEnd);
-//	}
 }

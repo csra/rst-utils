@@ -16,6 +16,7 @@
  */
 package de.citec.csra.rst.util;
 
+import static de.citec.csra.rst.util.IntervalUtils.currentTimeInMicros;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.timing.IntervalType.Interval;
 
@@ -78,9 +79,9 @@ public class StringRepresentation {
 			return "null";
 		}
 		StringBuilder b = new StringBuilder("(");
-		b.append(i.getBegin().getTime() - (origin < 0 ? System.currentTimeMillis() : origin))
+		b.append(i.getBegin().getTime() - (origin < 0 ? currentTimeInMicros() : origin))
 				.append(")-(")
-				.append(i.getEnd().getTime() - (origin < 0 ? System.currentTimeMillis() : origin))
+				.append(i.getEnd().getTime() - (origin < 0 ? currentTimeInMicros() : origin))
 				.append(")");
 		return b.toString();
 	}
