@@ -23,6 +23,7 @@ import rst.geometry.SphericalDirectionFloatType.SphericalDirectionFloat;
  * @author Patrick Holthaus
  * (<a href=mailto:patrick.holthaus@uni-bielefeld.de>patrick.holthaus@uni-bielefeld.de</a>)
  */
+@Deprecated
 public class SphericalDirectionFloatParser implements StringParser<SphericalDirectionFloat> {
 
 	@Override

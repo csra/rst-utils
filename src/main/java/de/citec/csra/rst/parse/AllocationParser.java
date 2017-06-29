@@ -27,6 +27,7 @@ import rst.timing.IntervalType.Interval;
  * @author Patrick Holthaus
  * (<a href=mailto:patrick.holthaus@uni-bielefeld.de>patrick.holthaus@uni-bielefeld.de</a>)
  */
+@Deprecated
 public class AllocationParser implements StringParser<ResourceAllocation> {
 
 	@Override

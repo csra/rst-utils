@@ -25,6 +25,7 @@ import rst.timing.DurationType.Duration;
  * @author Patrick Holthaus
  * (<a href=mailto:patrick.holthaus@uni-bielefeld.de>patrick.holthaus@uni-bielefeld.de</a>)
  */
+@Deprecated
 public class HighlightTargetParser implements StringParser<HighlightTarget> {
 
 	EnumParser<HighlightTarget.Modality> mods = new EnumParser<>(HighlightTarget.Modality.class);
