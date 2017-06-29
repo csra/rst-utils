@@ -37,33 +37,6 @@ public class TypesUtils {
 	private final static Logger LOG = Logger.getLogger(TypesUtils.class.getName());
 	private final static Pattern RST = Pattern.compile("^\\.(.*?):\\{(.*)\\}$");
 	
-	@Deprecated
-	public static Object parseText(String definition) throws IllegalArgumentException {
-		if (definition.startsWith(".")) {
-			try {
-				String rstName = definition.substring(definition.indexOf(".") + 1, definition.indexOf(":"));
-				String typeInfo = definition.substring(definition.indexOf("{") + 1, definition.lastIndexOf("}"));
-				LOG.log(Level.FINER, "Assuming RST of type ''{0}'' specified as ''{1}''.", new Object[]{rstName, typeInfo});
-
-				String pkg = rstName.substring(0, rstName.lastIndexOf(".") + 1);
-				String clz = rstName.substring(rstName.lastIndexOf(".") + 1);
-				String fqClz = pkg + clz + "Type$" + clz;
-
-				LOG.log(Level.FINER, "Trying to instantiate builder for class ''{0}''.", fqClz);
-
-				Class<?> cls = Class.forName(fqClz);
-				Message.Builder msgBuilder = (Message.Builder) cls.getMethod("newBuilder").invoke(null);
-				TextFormat.merge(typeInfo, msgBuilder);
-				return msgBuilder.build();
-			} catch (StringIndexOutOfBoundsException | ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException | TextFormat.ParseException e) {
-				LOG.log(Level.FINER, "Unable to parse string ''{0}'' as an rst data type ({1}), returning original definiton.", new Object[]{definition, e});
-				return definition;
-			}
-		} else {
-			return definition;
-		}
-	}
-
 	public static Object parse(String dsc) {
 		if (dsc == null) {
 			LOG.log(Level.FINER, "Description is null, returning.");
