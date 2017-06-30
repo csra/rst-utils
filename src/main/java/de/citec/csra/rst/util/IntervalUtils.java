@@ -75,7 +75,7 @@ public class IntervalUtils {
 				setEnd(Timestamp.newBuilder().setTime(MICROSECONDS.convert(end, unit))).build();
 	}
 
-	private final static SystemClock CLOCK = SystemClock.MONOTONIC;
+	private final static SystemClock CLOCK = SystemClock.INSTANCE;
 	private final static Comparator<ChronoInterval<Moment>> BY_LENGTH = new LengthComparator();
 	private final static Comparator<ChronoInterval<Moment>> BY_BEGIN = MomentInterval.comparator();
 
