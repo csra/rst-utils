@@ -18,6 +18,7 @@ package de.citec.csra.rst.util;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.TextFormat;
+import static de.citec.csra.rst.util.StringRepresentation.shortString;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -46,7 +47,7 @@ public class TypesUtils {
 		try {
 			return NumberFormat.getInstance().parse(dsc);
 		} catch (ParseException ex) {
-			LOG.log(Level.FINER, "Could not infer number from description string ''{0}''.", dsc);
+			LOG.log(Level.FINER, "Could not infer number from description string ''{0}''.", shortString(dsc));
 		}
 
 		switch (dsc.toLowerCase()) {
@@ -55,7 +56,7 @@ public class TypesUtils {
 			case "true":
 				return true;
 			default:
-				LOG.log(Level.FINER, "Could not infer boolean from description string ''{0}''.", dsc);
+				LOG.log(Level.FINER, "Could not infer boolean from description string ''{0}''.", shortString(dsc));
 		}
 
         Matcher matcher = RST.matcher(dsc);
@@ -77,7 +78,7 @@ public class TypesUtils {
 				
 				Message msg = msgBuilder.build();
 				DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(msg));
-				LOG.log(Level.FINER, "Loaded default converter for message ''{0}''.", StringRepresentation.shortString(msg));
+				LOG.log(Level.FINER, "Loaded default converter for message ''{0}''.", shortString(msg));
 				return msg;
 			} catch (StringIndexOutOfBoundsException | ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException | TextFormat.ParseException e) {
 				LOG.log(Level.FINER, "Unable to parse string ''{0}'' as an rst data type ({1}), returning original definiton.", new Object[]{dsc, e});
