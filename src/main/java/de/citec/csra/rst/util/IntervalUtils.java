@@ -16,11 +16,14 @@
  */
 package de.citec.csra.rst.util;
 
+import static de.citec.csra.rst.util.StringRepresentation.shortString;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import net.time4j.Moment;
 import net.time4j.SystemClock;
@@ -37,6 +40,8 @@ import rst.timing.TimestampType.Timestamp;
  * (<a href=mailto:patrick.holthaus@uni-bielefeld.de>patrick.holthaus@uni-bielefeld.de</a>)
  */
 public class IntervalUtils {
+
+	private final static Logger LOG = Logger.getLogger(IntervalUtils.class.getName());
 
 	private final static class LengthComparator implements Comparator<ChronoInterval<Moment>> {
 
@@ -92,8 +97,15 @@ public class IntervalUtils {
 
 			Moment startMoment = Moment.of(startSeconds, startNanos, TimeScale.POSIX);
 			Moment stopMoment = Moment.of(stopSeconds, stopNanos, TimeScale.POSIX);
-			return MomentInterval.between(startMoment, stopMoment);
+
+			if (stopMoment.isAfter(startMoment)) {
+				return MomentInterval.between(startMoment, stopMoment);
+			} else {
+				LOG.log(Level.WARNING, "Invalid interval with negative duration: ''{0}''", shortString(i));
+				return null;
+			}
 		} else {
+			LOG.log(Level.WARNING, "Invalid interval: ''{0}''", shortString(i));
 			return null;
 		}
 	}
@@ -223,12 +235,10 @@ public class IntervalUtils {
 		Moment now = CLOCK.currentTime();
 		if (g.contains(now)) {
 			return g;
+		} else if (g.isAfter(now)) {
+			return g.withStart(now);
 		} else {
-			if (g.isAfter(now)) {
-				return g.withStart(now);
-			} else {
-				return g.withEnd(now);
-			}
+			return g.withEnd(now);
 		}
 	}
 }
