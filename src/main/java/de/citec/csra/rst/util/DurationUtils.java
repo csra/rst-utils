@@ -16,19 +16,21 @@
  */
 package de.citec.csra.rst.util;
 
-import com.google.protobuf.Message;
-import com.google.protobuf.TextFormat;
 import static de.citec.csra.rst.util.StringRepresentation.shortString;
-import java.lang.reflect.InvocationTargetException;
-import java.text.NumberFormat;
-import java.text.ParseException;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 /**
  *
@@ -36,68 +38,50 @@ import rsb.converter.ProtocolBufferConverter;
  */
 public class DurationUtils {
 
-    private final static Logger LOG = Logger.getLogger(DurationUtils.class.getName());
-    private final static Pattern FORMAT = Pattern.compile("\\s+" +
-            "(?<D>\\d+)d\\s+" + 
-            "(?<H>\\d+)h\\s+" +
-            "(?<M>\\d+)m\\s+" +
-            "(?<M>\\d+)s\\s+" +
-            "(?<M>\\d+)ms\\s+" +
-            "(?<M>\\d+)µs\\s+" +
-            "(?<M>\\d+)ns\\s+" +
-            "(?<M>\\d+)m\\s+(\\d+)s");
+	private final static Logger LOG = Logger.getLogger(DurationUtils.class.getName());
+	private final static Map<TimeUnit, Pattern> PATTERNS = new EnumMap<>(TimeUnit.class);
 
-    private static TimeUnit defaultUnit = TimeUnit.MILLISECONDS;
+	private static TimeUnit defaultUnit = TimeUnit.MICROSECONDS;
 
-    public static void setDefaultUnit(TimeUnit unit) {
-        defaultUnit = unit;
-    }
+	static {
+		PATTERNS.put(DAYS, Pattern.compile(".*?(\\d+)\\s*d.*"));
+		PATTERNS.put(HOURS, Pattern.compile(".*?(\\d+)\\s*h.*"));
+		PATTERNS.put(MINUTES, Pattern.compile(".*?(\\d+)\\s*m.*"));
+		PATTERNS.put(SECONDS, Pattern.compile(".*?(\\d+)\\s*s.*"));
+		PATTERNS.put(MILLISECONDS, Pattern.compile(".*?(\\d+)\\s*ms.*"));
+		PATTERNS.put(MICROSECONDS, Pattern.compile(".*?(\\d+)\\s*µs.*"));
+		PATTERNS.put(NANOSECONDS, Pattern.compile(".*?(\\d+)\\s*ns.*"));
+	}
 
-    public static long parse(String dsc, TimeUnit target) {
-        if(target == null){
-            LOG.log(Level.FINER, "Target unit is null, using default value ''{0}''.", defaultUnit);
-            target = defaultUnit;
-        }
-        
-        if (dsc == null) {
-            LOG.log(Level.FINER, "Description is null, returning '0'.");
-            return 0;
-        }
+	public static void setDefaultUnit(TimeUnit unit) {
+		defaultUnit = unit;
+	}
 
-        try {
-            return NumberFormat.getInstance().parse(dsc).longValue();
-        } catch (ParseException ex) {
-            LOG.log(Level.FINER, "Could not infer number from description string ''{0}''.", shortString(dsc));
-        }
+	public static long parse(String dsc, TimeUnit target) {
+		if (target == null) {
+			LOG.log(Level.FINER, "Target unit is null, using default value ''{0}''.", defaultUnit);
+			target = defaultUnit;
+		}
 
-        Matcher matcher = FORMAT.matcher(dsc);
-        if (matcher.matches()) {
-            try {
-                String rstName = matcher.group(1);
-                String typeInfo = matcher.group(2);
-                LOG.log(Level.FINER, "Assuming RST of type ''{0}'' specified as ''{1}''.", new Object[]{rstName, typeInfo});
+		if (dsc == null) {
+			LOG.log(Level.FINER, "Description is null, returning '0'.");
+			return 0;
+		}
 
-                String pkg = rstName.substring(0, rstName.lastIndexOf(".") + 1);
-                String clz = rstName.substring(rstName.lastIndexOf(".") + 1);
-                String fqClz = pkg + clz + "Type$" + clz;
-
-                LOG.log(Level.FINER, "Trying to instantiate builder for class ''{0}''.", fqClz);
-
-                Class<?> cls = Class.forName(fqClz);
-                Message.Builder msgBuilder = (Message.Builder) cls.getMethod("newBuilder").invoke(null);
-                TextFormat.merge(typeInfo, msgBuilder);
-
-                Message msg = msgBuilder.build();
-                DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(msg));
-                LOG.log(Level.FINER, "Loaded default converter for message ''{0}''.", shortString(msg));
-                return msg;
-            } catch (StringIndexOutOfBoundsException | ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException | TextFormat.ParseException e) {
-                LOG.log(Level.FINER, "Unable to parse string ''{0}'' as an rst data type ({1}), returning original definiton.", new Object[]{dsc, e});
-                return dsc;
-            }
-        } else {
-            LOG.log(Level.FINER, "Could not infer rst from description string ''{0}''.", dsc);
-            return dsc;
-        }
-    }
+		try {
+			long value = 0;
+			for (Map.Entry<TimeUnit, Pattern> pair : PATTERNS.entrySet()) {
+				Matcher m = pair.getValue().matcher(dsc);
+				if (m.matches()) {
+					value += target.convert(Long.valueOf(m.group(1)), pair.getKey());
+					LOG.log(Level.FINEST, "Adding {0} {1}", new String[]{m.group(1), pair.getKey().name()});
+				}
+			}
+			LOG.log(Level.FINER, "Converted ''{0}'' to {1} {2}", new Object[]{dsc, value, target.name()});
+			return value;
+		} catch (NumberFormatException ex) {
+			LOG.log(Level.FINER, "Could not infer time value from description string ''{0}'', returning '0'.", shortString(dsc));
+			return 0;
+		}
+	}
 }
