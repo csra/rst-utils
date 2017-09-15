@@ -130,6 +130,7 @@ public class IntervalUtils {
 					setEnd(Timestamp.newBuilder().setTime(stop)).
 					build();
 		} else {
+			LOG.log(Level.WARNING, "Invalid interval: ''{0}''", shortString(i));
 			return null;
 		}
 	}
@@ -159,69 +160,73 @@ public class IntervalUtils {
 	}
 
 	public static MomentInterval findFirst(MomentInterval g, MomentInterval r, List<MomentInterval> b) {
+		if (g != null && r != null && b != null) {
+			IntervalCollection<Moment> blocking = IntervalCollection.onMomentAxis().plus(b);
+			IntervalCollection<Moment> goal = IntervalCollection.onMomentAxis().plus(g);
+			IntervalCollection<Moment> free = IntervalCollection.onMomentAxis().plus(blocking.withComplement(r).getIntervals());
+			IntervalCollection<Moment> overlaps = free.intersect(goal);
 
-		IntervalCollection<Moment> blocking = IntervalCollection.onMomentAxis().plus(b);
-		IntervalCollection<Moment> goal = IntervalCollection.onMomentAxis().plus(g);
-		IntervalCollection<Moment> free = IntervalCollection.onMomentAxis().plus(blocking.withComplement(r).getIntervals());
-		IntervalCollection<Moment> overlaps = free.intersect(goal);
-
-		if (!overlaps.isEmpty()) {
-			return (MomentInterval) overlaps.getIntervals().stream().min(BY_BEGIN).get();
-		}
-		if (!free.isEmpty()) {
-			return (MomentInterval) free.getIntervals().stream().min(BY_BEGIN).get();
+			if (!overlaps.isEmpty()) {
+				return (MomentInterval) overlaps.getIntervals().stream().min(BY_BEGIN).get();
+			}
+			if (!free.isEmpty()) {
+				return (MomentInterval) free.getIntervals().stream().min(BY_BEGIN).get();
+			}
 		}
 		return null;
 	}
 
 	public static MomentInterval findMax(MomentInterval g, MomentInterval r, List<MomentInterval> b) {
+		if (g != null && r != null && b != null) {
+			IntervalCollection<Moment> blocking = IntervalCollection.onMomentAxis().plus(b);
+			IntervalCollection<Moment> goal = IntervalCollection.onMomentAxis().plus(g);
+			IntervalCollection<Moment> free = IntervalCollection.onMomentAxis().plus(blocking.withComplement(r).getIntervals());
+			IntervalCollection<Moment> overlaps = free.intersect(goal);
 
-		IntervalCollection<Moment> blocking = IntervalCollection.onMomentAxis().plus(b);
-		IntervalCollection<Moment> goal = IntervalCollection.onMomentAxis().plus(g);
-		IntervalCollection<Moment> free = IntervalCollection.onMomentAxis().plus(blocking.withComplement(r).getIntervals());
-		IntervalCollection<Moment> overlaps = free.intersect(goal);
-
-		if (!overlaps.isEmpty()) {
-			return (MomentInterval) overlaps.getIntervals().stream().max(BY_LENGTH).get();
-		}
-		if (!free.isEmpty()) {
-			return (MomentInterval) free.getIntervals().stream().max(BY_LENGTH).get();
+			if (!overlaps.isEmpty()) {
+				return (MomentInterval) overlaps.getIntervals().stream().max(BY_LENGTH).get();
+			}
+			if (!free.isEmpty()) {
+				return (MomentInterval) free.getIntervals().stream().max(BY_LENGTH).get();
+			}
 		}
 		return null;
 	}
 
 	public static MomentInterval findRemaining(MomentInterval g, List<MomentInterval> b) {
+		if (g != null && b != null) {
+			Moment now = CLOCK.currentTime();
+			IntervalCollection<Moment> blocking = IntervalCollection.onMomentAxis().plus(b);
 
-		Moment now = CLOCK.currentTime();
-		IntervalCollection<Moment> blocking = IntervalCollection.onMomentAxis().plus(b);
-
-		for (ChronoInterval<Moment> m : blocking.getIntervals()) {
-			if (m.contains(now)) {
-				return null;
+			for (ChronoInterval<Moment> m : blocking.getIntervals()) {
+				if (m.contains(now)) {
+					return null;
+				}
 			}
-		}
 
-		IntervalCollection<Moment> goal = IntervalCollection.onMomentAxis().plus(g);
-		IntervalCollection<Moment> free = IntervalCollection.onMomentAxis().plus(blocking.withComplement(g).getIntervals());
-		IntervalCollection<Moment> overlaps = free.intersect(goal);
+			IntervalCollection<Moment> goal = IntervalCollection.onMomentAxis().plus(g);
+			IntervalCollection<Moment> free = IntervalCollection.onMomentAxis().plus(blocking.withComplement(g).getIntervals());
+			IntervalCollection<Moment> overlaps = free.intersect(goal);
 
-		if (!overlaps.isEmpty()) {
-			return includeNow((MomentInterval) overlaps.getIntervals().stream().min(BY_BEGIN).get());
+			if (!overlaps.isEmpty()) {
+				return includeNow((MomentInterval) overlaps.getIntervals().stream().min(BY_BEGIN).get());
+			}
 		}
 		return null;
 	}
 
 	public static MomentInterval findComplete(MomentInterval g, MomentInterval r, List<MomentInterval> b) {
+		if (g != null && r != null && b != null) {
+			IntervalCollection<Moment> blocking = IntervalCollection.onMomentAxis().plus(b);
+			IntervalCollection<Moment> goal = IntervalCollection.onMomentAxis().plus(g);
+			IntervalCollection<Moment> free = IntervalCollection.onMomentAxis().plus(blocking.withComplement(r).getIntervals());
+			IntervalCollection<Moment> overlaps = free.intersect(goal);
 
-		IntervalCollection<Moment> blocking = IntervalCollection.onMomentAxis().plus(b);
-		IntervalCollection<Moment> goal = IntervalCollection.onMomentAxis().plus(g);
-		IntervalCollection<Moment> free = IntervalCollection.onMomentAxis().plus(blocking.withComplement(r).getIntervals());
-		IntervalCollection<Moment> overlaps = free.intersect(goal);
-
-		if (!overlaps.isEmpty()) {
-			MomentInterval first = (MomentInterval) overlaps.getIntervals().get(0);
-			if (first.equivalentTo(g)) {
-				return first;
+			if (!overlaps.isEmpty()) {
+				MomentInterval first = (MomentInterval) overlaps.getIntervals().get(0);
+				if (first.equivalentTo(g)) {
+					return first;
+				}
 			}
 		}
 		return null;
