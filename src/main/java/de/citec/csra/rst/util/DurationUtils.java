@@ -67,6 +67,12 @@ public class DurationUtils {
 			LOG.log(Level.FINER, "Description is null, returning '0'.");
 			return 0;
 		}
+		
+		try {
+			return Long.valueOf(dsc);
+		} catch (NumberFormatException ex) {
+			LOG.log(Level.FINER, "Could not infer number from description string ''{0}''.", shortString(dsc));
+		}
 
 		try {
 			long value = 0;
@@ -83,5 +89,7 @@ public class DurationUtils {
 			LOG.log(Level.FINER, "Could not infer time value from description string ''{0}'', returning '0'.", shortString(dsc));
 			return 0;
 		}
+		
+		
 	}
 }
